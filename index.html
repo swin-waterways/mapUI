@@ -18,7 +18,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // Initialize the map and set its view to a specific location and zoom level
-        const map = L.map('map').setView([-37.8136, 144.9631], 13); // Coordinates for Melbourne, Victoria
+        const map = L.map('map').setView([-37, 144.9631], 7); // Coordinates for Melbourne, Victoria
 
         // Set up the OpenStreetMap layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -26,6 +26,45 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+// Array of GeoJSON files to load
+const geojsonFiles = [
+    '/shape_file/broken.geojson',
+    '/shape_file/campaspe.geojson',
+    '/shape_file/goulburn.geojson',
+    '/shape_file/loddon.geojson'
+];
+
+// Function to fetch and add GeoJSON data to the map
+function loadGeoJson(url) {
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    // Optional: Apply different styles based on feature properties
+                    return {
+                        color: 'black',
+                        weight: 2,
+                        fillColor: 'green', // Default fill color
+                        fillOpacity: 0.5
+                    };
+                },
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup("Feature: " + feature.properties.name); // Assuming 'name' property exists
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+}
+
+// Use Promise.all to load all GeoJSON files concurrently
+Promise.all(geojsonFiles.map(loadGeoJson))
+    .then(() => {
+        console.log('All GeoJSON files loaded successfully');
+    })
+    .catch(error => {
+        console.error('Error loading one or more GeoJSON files:', error);
+    });
         // // Add a marker to the map
         // const marker = L.marker([51.5, -0.09]).addTo(map);
 
